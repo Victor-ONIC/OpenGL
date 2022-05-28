@@ -158,36 +158,51 @@ int main()
 
 
 	// Tableau de sommets / Vertex array
-	// Ici, 3 sommets d'1 attribut: position (2 floats).
-	float positions[6] = {
-		-0.5, -0.5,  // Sommet 1: position (x, y), et c'est tout.
-		 0.0,  0.5,  // Sommet 2: position (x, y), et c'est tout.
-		 0.5, -0.5   // Sommet 3: position (x, y), et c'est tout.
+	float positions[] = {
+		-0.5, -0.5,  // Sommet 0
+		 0.5, -0.5,  // Sommet 1
+		 0.5,  0.5,  // Sommet 2
+		-0.5,  0.5,  // Sommet 3
 	};
 
-	// Déclarer "1" buffer dont l'ID sera mise dans "&buffId".
-	GLuint buffId = 0;
-	glGenBuffers(1, &buffId);
+	// Tableau d'index de sommets / Vertex Indices
+	unsigned int index[] = {
+		0, 1, 2,  // Premier triangle
+		2, 3, 0   // Deuxième triangle
+	};
 
-	// Attache à "GL_ARRAY_BUFFER" le buffer d'ID "buffId".
-	glBindBuffer(GL_ARRAY_BUFFER, buffId);
-	// Initialiser la mémoire du buffer attaché à "GL_ARRAY_BUFFER" avec "6*sizeof(float)" octets de "positions" (copie).
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+	// BUFFER DE SOMMETS / VERTEX BUFFER
+	// Déclarer un buffer.
+	GLuint vertexBuffID;
+	glGenBuffers(1, &vertexBuffID);
+	// Attacher le buffer à GL_ARRAY_BUFFER.
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffID);
+	// Initialiser la mémoire du buffer attaché à "GL_ARRAY_BUFFER" dans la carte graphique.
+	glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+
+	// BUFFER D'INDICES / INDEX BUFFER
+	// Déclarer un second buffer.
+	GLuint indexBuffID;
+	glGenBuffers(1, &indexBuffID);
+	// Attacher le buffer à GL_ELEMENT_ARRAY_BUFFER.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffID);
+	// Initialiser la mémoire du buffer attaché à "GL_ELEMENT_ARRAY_BUFFER" dans la carte graphique.
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), index, GL_STATIC_DRAW);
 
 	// DÉFINIR LA DISPOSITION DES DONNÉES DE SOMMET / VERTEX ATTRIBUTE LAYOUT
 	// Définit l'attribut de sommet d'index "0" (ici la position) composé de "2" "GL_FLOAT" "non normalisés".
 	// La taille d'un **sommet** est "2*sizeof(float)".
 	// Le décalage entre cet attribut et le début du buffer est de "0". Cast en void* obligatoire...
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0);
-	// Active les attributs de sommets d'index "0", qui sont désactivés de base.
+	// Active l'attributs de sommet d'index "0", qui est désactivé de base.
 	glEnableVertexAttribArray(0);
 
 	// Obtenir le code source des shaders. LE CHEMIN DU FICHIER N'EST PAS TOUJOURS LE MÊME.
 	ShaderProgramSource source = parseShader("./res/shaders/Basic.shader");
 
-	// Crée un programme et met son ID dans "shader".
+	// Crée un programme.
 	GLuint shader = createShader(source.vertexSource, source.fragmentSource);
-	// Utiliser le programme d'ID "shader".
+	// Utiliser le programme.
 	glUseProgram(shader);
 
 
@@ -201,7 +216,8 @@ int main()
 		// Render here
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// DESSINER A PARTIR DU BUFFER GL_ELEMENT_ARRAY_BUFFER avec les indices de sommets.
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		// Swap front and back buffers
 		glfwSwapBuffers(window);
@@ -212,7 +228,7 @@ int main()
 
 	// Supprimer tous les objets une fois qu'ils ne sont plus utilisés.
 	glDeleteProgram(shader);
-	glDeleteBuffers(1, &buffId);
+	glDeleteBuffers(1, &vertexBuffID);
 
 	glfwTerminate();
 
