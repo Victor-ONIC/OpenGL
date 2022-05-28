@@ -135,6 +135,7 @@ int main()
 	// Active les attributs de sommets d'index "0", qui sont désactivés de base.
 	glEnableVertexAttribArray(0);
 
+	// Code source du Vertex Shader.
 	std::string vertexShader =
 		"#version 330 core\n"
 		"\n"
@@ -145,6 +146,7 @@ int main()
 		"	gl_Position = position;\n"
 		"}\n";
 
+	// Code source du Fragment Shader.
 	std::string fragmentShader =
 		"#version 330 core\n"
 		"\n"
