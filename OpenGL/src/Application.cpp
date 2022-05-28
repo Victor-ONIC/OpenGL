@@ -3,6 +3,53 @@
 
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <sstream>
+
+struct ShaderProgramSource
+{
+	std::string vertexSource;
+	std::string fragmentSource;
+};
+
+// Lire le fichier "filepath" et en extraire le code source des shaders.
+static struct ShaderProgramSource parseShader(const std::string& filepath)
+{
+	// Ouvrir le fichier à l'emplacement "filepath".
+	std::ifstream file(filepath);
+
+	enum class ShaderType
+	{
+		NONE = -1, VERTEX = 0, FRAGMENT = 1
+	};
+
+	// Lire le fichier ligne par ligne.
+	std::string line;					 // string pour contenir la ligne lue actuellement.
+	std::stringstream ss[2];			 // 2 string streams pour contenir le code source des shaders.
+	ShaderType type = ShaderType::NONE;  // type du shader lu.
+
+	while (std::getline(file, line))
+	{
+		// Si on trouve "#shader" dans la ligne lue...
+		if (line.find("#shader") != std::string::npos)
+		{
+			// et qu'on trouve "vertex" dans la ligne, on met le type à VERTEX.
+			if (line.find("vertex") != std::string::npos)
+				type = ShaderType::VERTEX;
+			// et qu'on trouve "fragment" dans la ligne, on met le type à FRAGMENT.
+			else if (line.find("fragment") != std::string::npos)
+				type = ShaderType::FRAGMENT;
+		}
+		// sinon, on ajoute la ligne au shader "type".
+		else
+		{
+			// cast de "type" en int astucieux -> index du tableau "ss".
+			ss[(int)type] << line << '\n';
+		}
+	}
+
+	return { ss[0].str(), ss[1].str() };
+}
 
 // Créer et compiler le shader de type "type" avec le code source "source".
 static GLuint compileShader(GLenum type, const std::string& source)
@@ -135,30 +182,11 @@ int main()
 	// Active les attributs de sommets d'index "0", qui sont désactivés de base.
 	glEnableVertexAttribArray(0);
 
-	// Code source du Vertex Shader.
-	std::string vertexShader =
-		"#version 330 core\n"
-		"\n"
-		"layout(location = 0) in vec4 position;\n"
-		"\n"
-		"void main()\n"
-		"{\n"
-		"	gl_Position = position;\n"
-		"}\n";
-
-	// Code source du Fragment Shader.
-	std::string fragmentShader =
-		"#version 330 core\n"
-		"\n"
-		"out vec4 color;\n"
-		"\n"
-		"void main()\n"
-		"{\n"
-		"	color = vec4(1.0, 0.0, 0.0, 1.0);\n"
-		"}\n";
+	// Obtenir le code source des shaders. LE CHEMIN DU FICHIER N'EST PAS TOUJOURS LE MÊME.
+	ShaderProgramSource source = parseShader("./res/shaders/Basic.shader");
 
 	// Crée un programme et met son ID dans "shader".
-	GLuint shader = createShader(vertexShader, fragmentShader);
+	GLuint shader = createShader(source.vertexSource, source.fragmentSource);
 	// Utiliser le programme d'ID "shader".
 	glUseProgram(shader);
 
