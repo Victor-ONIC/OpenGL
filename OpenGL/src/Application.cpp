@@ -6,13 +6,18 @@
 #include <fstream>
 #include <sstream>
 
+
+
+
+
+// Structure contenant les codes sources des shaders.
 struct ShaderProgramSource
 {
 	std::string vertexSource;
 	std::string fragmentSource;
 };
 
-// Lire le fichier "filepath" et en extraire le code source des shaders.
+// Lire le fichier "filepath" et en extraire les codes sources des shaders.
 static struct ShaderProgramSource parseShader(const std::string& filepath)
 {
 	// Ouvrir le fichier à l'emplacement "filepath".
@@ -30,21 +35,16 @@ static struct ShaderProgramSource parseShader(const std::string& filepath)
 
 	while (std::getline(file, line))
 	{
-		// Si on trouve "#shader" dans la ligne lue...
 		if (line.find("#shader") != std::string::npos)
 		{
-			// et qu'on trouve "vertex" dans la ligne, on met le type à VERTEX.
 			if (line.find("vertex") != std::string::npos)
 				type = ShaderType::VERTEX;
-			// et qu'on trouve "fragment" dans la ligne, on met le type à FRAGMENT.
 			else if (line.find("fragment") != std::string::npos)
 				type = ShaderType::FRAGMENT;
 		}
-		// sinon, on ajoute la ligne au shader "type".
 		else
 		{
-			// cast de "type" en int astucieux -> index du tableau "ss".
-			ss[(int)type] << line << '\n';
+			ss[static_cast<int>(type)] << line << '\n';
 		}
 	}
 
@@ -57,7 +57,7 @@ static GLuint compileShader(GLenum type, const std::string& source)
 	// Déclarer un shader de type "type", dont l'ID sera mise dans "ID".
 	GLuint ID = glCreateShader(type);
 
-	// Ajouter au shader d'ID "ID" "1" code source situé dans "&src".
+	// Ajouter au shader d'ID "ID" "1" code source situé dans "src".
 	const char* src = source.c_str();
 	glShaderSource(ID, 1, &src, nullptr);
 
@@ -65,17 +65,17 @@ static GLuint compileShader(GLenum type, const std::string& source)
 	glCompileShader(ID);
 
 	// VÉRIFICATION
-	// Obtenir le "status de la compilation" du shader "ID" et le mettre dans "&result".
+	// Obtenir le "status de la compilation" du shader "ID" et le mettre dans "result".
 	GLint result = 0;
 	glGetShaderiv(ID, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE)
 	{
-		// Obtenir la "taille du log" du shader "ID" et la mettre dans "&length".
+		// Obtenir la "taille du log" du shader "ID" et la mettre dans "length".
 		int length = 0;
 		glGetShaderiv(ID, GL_INFO_LOG_LENGTH, &length);
 
-		// Allouer assez de place sur la pile pour stocker le message.
-		char* message = (char*)alloca(length * sizeof(char));
+		// Allouer assez de place pour stocker le message.
+		char* message = new char[length];
 
 		// Obtenir le message de log du shader "ID".
 		glGetShaderInfoLog(ID, length, &length, message);
@@ -86,6 +86,7 @@ static GLuint compileShader(GLenum type, const std::string& source)
 		std::cout << message << std::endl;
 
 		glDeleteShader(ID);
+		delete[] message;
 		return 0;
 	}
 
@@ -117,6 +118,11 @@ static GLuint createShader(const std::string& vertexShader, const std::string& f
 
 	return program;
 }
+
+
+
+
+
 
 int main()
 {
