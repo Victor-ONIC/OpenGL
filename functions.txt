@@ -6,22 +6,22 @@ const GLubyte* glGetString(GLenum name);
 
 // BUFFERS
 void glGenBuffers(GLsizei n,
-				  GLuint* buffers);
+                  GLuint* buffers);
 void glDeleteBuffers(GLsizei n,
-					 const GLluint* buffers);
+                     const GLluint* buffers);
 
 void glGenVertexArrays(GLsizei n,
-					   GLuint* arrays);
+                       GLuint* arrays);
 void glDeleteVertexArrays(GLsizei n,
-						  GLuint* arrays);
+                          GLuint* arrays);
 
 void glBindBuffer(GLenum target,
-				  GLuint buffer);
+                  GLuint buffer);
 
 void glBufferData(GLenum target,
-				  GLsizeiptr size,
-				  const GLvoid* data,
-				  GLenum usage);
+                  GLsizeiptr size,
+                  const GLvoid* data,
+                  GLenum usage);
 
 void glBindVertexArray(GLuint array);
 
@@ -29,11 +29,11 @@ void glEnableVertexAttribArray(GLuint index);
 void glDisableVertexAttribArray(GLuint index);
 
 void glVertexAttribPointer(GLuint index,
-						   GLint size,
-						   GLenum type,
-						   GLboolean normalized,
-						   GLsizei stride,
-						   const GLvoid* pointer);
+                           GLint size,
+                           GLenum type,
+                           GLboolean normalized,
+                           GLsizei stride,
+                           const GLvoid* pointer);
 
 
 
@@ -45,36 +45,36 @@ GLuint glCreateShader(GLenum shaderType);
 void glDeleteShader(GLuint shader);
 
 void glShaderSource(GLuint shader,
-					GLsizei count,
-					const CLchar** string,
-					const GLint* length);
+                    GLsizei count,
+                    const CLchar** string,
+                    const GLint* length);
 
 void glCompileShader(GLuint shader);
 
 void glAttachShader(GLuint program,
-					GLuint shader);
+                    GLuint shader);
 
 void glLinkProgram(GLuint program);
 
 void glValidateProgram(GLuint program);
 
 void glGetShaderiv(GLuint shader,
-				   GLenum pname,
-				   GLint* params);
+                   GLenum pname,
+                   GLint* params);
 
 void glGetShaderInfoLog(GLuint shader,
-						GLsizei maxLength,
-						GLsizei *length,
-						GLchar *infoLog);
+                        GLsizei maxLength,
+                        GLsizei *length,
+                        GLchar *infoLog);
 
 void glGetProgramiv(GLuint program,
-					GLenum pname,
-					GLint* params);
+                    GLenum pname,
+                    GLint* params);
 
 void glGetProgramInfoLog(GLuint program,
-						 GLsizei maxLength,
-						 GLsizei* length,
-						 GLchar* infoLog);
+                         GLsizei maxLength,
+                         GLsizei* length,
+                         GLchar* infoLog);
 
 void glUseProgram(GLuint program);
 
@@ -84,18 +84,18 @@ void glUseProgram(GLuint program);
 void glClear(GLbitfield mask);
 
 void glClearColor(GLfloat red,
-				  GLfloat green,
-				  GLfloat blue,
-				  GLBloat alpha);
+                  GLfloat green,
+                  GLfloat blue,
+                  GLBloat alpha);
 
 void glDrawArrays(GLenum mode,
-				  GLint first,
-				  GLsizei count);
+                  GLint first,
+                  GLsizei count);
 
 void glDrawElements(GLenum mode,
-					GLsizei count,
-					GLenum type,
-					const GLvoid* indices);
+                    GLsizei count,
+                    GLenum type,
+                    const GLvoid* indices);
 
 void glPolygonMode(GLenum face,
-				   GLenum mode);
+                   GLenum mode);
