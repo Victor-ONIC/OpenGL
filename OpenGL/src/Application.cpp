@@ -10,17 +10,14 @@
 
 
 
-// Structure contenant les codes sources des shaders.
 struct ShaderProgramSource
 {
 	std::string vertexSource;
 	std::string fragmentSource;
 };
 
-// Lire le fichier "filepath" et en extraire les codes sources des shaders.
-static struct ShaderProgramSource parseShader(const std::string& filepath)
+static ShaderProgramSource parseShader(const std::string& filepath)
 {
-	// Ouvrir le fichier à l'emplacement "filepath".
 	std::ifstream file(filepath);
 
 	enum class ShaderType
@@ -28,10 +25,9 @@ static struct ShaderProgramSource parseShader(const std::string& filepath)
 		NONE = -1, VERTEX = 0, FRAGMENT = 1
 	};
 
-	// Lire le fichier ligne par ligne.
-	std::string line;					 // string pour contenir la ligne lue actuellement.
-	std::stringstream ss[2];			 // 2 string streams pour contenir le code source des shaders.
-	ShaderType type = ShaderType::NONE;  // type du shader lu.
+	std::string line;
+	std::stringstream ss[2];
+	ShaderType type = ShaderType::NONE;
 
 	while (std::getline(file, line))
 	{
@@ -51,33 +47,25 @@ static struct ShaderProgramSource parseShader(const std::string& filepath)
 	return { ss[0].str(), ss[1].str() };
 }
 
-// Créer et compiler le shader de type "type" avec le code source "source".
 static GLuint compileShader(GLenum type, const std::string& source)
 {
-	// Déclarer un shader de type "type", dont l'ID sera mise dans "ID".
 	GLuint ID = glCreateShader(type);
 
-	// Ajouter au shader d'ID "ID" "1" code source situé dans "src".
 	const char* src = source.c_str();
 	glShaderSource(ID, 1, &src, nullptr);
 
-	// Compiler le shader d'ID "ID".
 	glCompileShader(ID);
 
-	// VÉRIFICATION
-	// Obtenir le "status de la compilation" du shader "ID" et le mettre dans "result".
+	// Vérification de la compilation.
 	GLint result = 0;
 	glGetShaderiv(ID, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE)
 	{
-		// Obtenir la "taille du log" du shader "ID" et la mettre dans "length".
 		int length = 0;
 		glGetShaderiv(ID, GL_INFO_LOG_LENGTH, &length);
 
-		// Allouer assez de place pour stocker le message.
 		char* message = new char[length];
 
-		// Obtenir le message de log du shader "ID".
 		glGetShaderInfoLog(ID, length, &length, message);
 		std::cout
 			<< "Erreur compilation de "
@@ -94,29 +82,34 @@ static GLuint compileShader(GLenum type, const std::string& source)
 	return ID;
 }
 
-// Crée le shader final compilé et lié. Contient Vertex Shader & Fragment Shader.
 static GLuint createShader(const std::string& vertexShader, const std::string& fragmentShader)
 {
-	// Crée un Programme dont l'ID sera mise dans "program".
 	GLuint program = glCreateProgram();
 
-	// VS et FS sont les ID des Vertex et Fragment shaders compilés.
 	GLuint VS = compileShader(GL_VERTEX_SHADER, vertexShader);
 	GLuint FS = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-	// On attache les shaders "VS" et "FS" au Programme "program".
 	glAttachShader(program, VS);
 	glAttachShader(program, FS);
 
-	// On link le Programme "program". On vérifie que tout s'est bien passé.
 	glLinkProgram(program);
-	glValidateProgram(program);
+	glValidateProgram(program);  // vérifier le link ?
 
-	// Une fois que le programme final est obtenu, on peut supprimer les intermédiaires.
 	glDeleteShader(VS);
 	glDeleteShader(FS);
 
 	return program;
+}
+
+void window_resize(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }
 
 
@@ -129,16 +122,18 @@ int main()
 	// Initialize GLFW.
 	if (!glfwInit())
 	{
-		std::cout << "Erreur glfwInit() !" << std::endl;
+		std::cout << "Erreur dans l'initialisation de GLFW !" << std::endl;
 		return -1;
 	}
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a windowed mode window and its OpenGL context.
-	GLFWwindow* window;
-	window = glfwCreateWindow(640, 480, "Tutoriel OpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutoriel OpenGL", NULL, NULL);
 	if (!window)
 	{
-		std::cout << "Erreur glfwCreateWindow() !" << std::endl;
+		std::cout << "Erreur dans la création de la fenêtre !" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -146,14 +141,19 @@ int main()
 	// Make the window's context current.
 	glfwMakeContextCurrent(window);
 
-	// Initialize GLEW.
-	// Must be called after a valid window context has been created.
+	// Initialize GLEW. Must be called after a valid window context has been created.
 	if (glewInit() != GLEW_OK)
 	{
-		std::cout << "Erreur glewInit() !" << std::endl;
+		std::cout << "Erreur dans l'initialisation de GLEW !" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
+
+	// Donner à OpenGL la taille de la fenêtre
+	glViewport(0, 0, 800, 600);
+
+	// Définir la fonction à appeler lorsque la fenêtre change de taille.
+	glfwSetFramebufferSizeCallback(window, window_resize);
 
 	// Afficher la version d'OpenGL sur la console.
 	std::cout << glGetString(GL_VERSION) << std::endl;
@@ -163,53 +163,46 @@ int main()
 
 
 
-	// Tableau de sommets / Vertex array
+	// Sommets.
 	float positions[] = {
-		-0.5, -0.5,  // Sommet 0
-		 0.5, -0.5,  // Sommet 1
-		 0.5,  0.5,  // Sommet 2
-		-0.5,  0.5,  // Sommet 3
+		-0.5, -0.5,
+		 0.5, -0.5,
+		 0.5,  0.5,
+		-0.5,  0.5
 	};
 
-	// Tableau d'index de sommets / Vertex Indices
+	// Index des sommets à dessiner.
 	unsigned int index[] = {
-		0, 1, 2,  // Premier triangle
-		2, 3, 0   // Deuxième triangle
+		0, 1, 2,
+		2, 3, 0
 	};
 
-	// BUFFER DE SOMMETS / VERTEX BUFFER
-	// Déclarer un buffer.
+	// VAO
+	GLuint vertexArrayID;
+	glGenVertexArrays(1, &vertexArrayID);
+	glBindVertexArray(vertexArrayID);
+
+	// VBO
 	GLuint vertexBuffID;
 	glGenBuffers(1, &vertexBuffID);
-	// Attacher le buffer à GL_ARRAY_BUFFER.
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffID);
-	// Initialiser la mémoire du buffer attaché à "GL_ARRAY_BUFFER" dans la carte graphique.
-	glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
 
-	// BUFFER D'INDICES / INDEX BUFFER
-	// Déclarer un second buffer.
+	// EBO
 	GLuint indexBuffID;
 	glGenBuffers(1, &indexBuffID);
-	// Attacher le buffer à GL_ELEMENT_ARRAY_BUFFER.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffID);
-	// Initialiser la mémoire du buffer attaché à "GL_ELEMENT_ARRAY_BUFFER" dans la carte graphique.
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), index, GL_STATIC_DRAW);
 
-	// DÉFINIR LA DISPOSITION DES DONNÉES DE SOMMET / VERTEX ATTRIBUTE LAYOUT
-	// Définit l'attribut de sommet d'index "0" (ici la position) composé de "2" "GL_FLOAT" "non normalisés".
-	// La taille d'un **sommet** est "2*sizeof(float)".
-	// Le décalage entre cet attribut et le début du buffer est de "0". Cast en void* obligatoire...
+	// Vertex Attribute Layout
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0);
-	// Active l'attributs de sommet d'index "0", qui est désactivé de base.
 	glEnableVertexAttribArray(0);
 
-	// Obtenir le code source des shaders. LE CHEMIN DU FICHIER N'EST PAS TOUJOURS LE MÊME.
+	// Shaders
 	ShaderProgramSource source = parseShader("./res/shaders/Basic.shader");
-
-	// Crée un programme.
 	GLuint shader = createShader(source.vertexSource, source.fragmentSource);
-	// Utiliser le programme.
-	glUseProgram(shader);
+
+	glBindVertexArray(0);
 
 
 
@@ -217,26 +210,32 @@ int main()
 
 
 	// Loop until the user closes the window
+	glClearColor(0.2, 0.3, 0.3, 1.0);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	while (!glfwWindowShouldClose(window))
 	{
-		// Render here
+		// Input.
+		processInput(window);
+
+		// Draw.
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// DESSINER A PARTIR DU BUFFER GL_ELEMENT_ARRAY_BUFFER avec les indices de sommets.
+		glUseProgram(shader);
+		glBindVertexArray(vertexArrayID);
+
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-		// Swap front and back buffers
+		// Swap buffers and check events.
 		glfwSwapBuffers(window);
-
-		// Poll for and process events
 		glfwPollEvents();
 	}
 
-	// Supprimer tous les objets une fois qu'ils ne sont plus utilisés.
-	glDeleteProgram(shader);
-	glDeleteBuffers(1, &vertexBuffID);
+	glDeleteProgram(shader);                  // shader program
+	glDeleteBuffers(1, &vertexBuffID);        // vbo
+	glDeleteBuffers(1, &indexBuffID);         // ebo
+	glDeleteVertexArrays(1, &vertexArrayID);  // vao
 
 	glfwTerminate();
-
 	return 0;
 }
