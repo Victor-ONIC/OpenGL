@@ -1,3 +1,40 @@
+// GLFW
+int glfwInit();
+void glfwTerminate();
+
+void glfwWindowHint(int hint,
+                    int value);
+
+GLFWwindow* glfwCreateWindow(int width,
+                             int height,
+                             const char* title,
+                             GLFWmonitor* monitor,
+                             GLFWwindow* share);
+
+void glfwMakeContextCurrent(GLFWwindow* window);
+
+GLFWframebuffsizefun glfwSetFramebufferSizeCallback(GLFWwindow* window,
+                                                    GLFWframebuffersizefun callback);
+
+int glfwWindowShouldClose(GLFWwindow* window);
+void glfwSetWindowShouldClose(GLFWwindow* window,
+                              int value);
+
+void glfwSwapBuffers(GLFWwindow* window);
+
+void glfwPollEvents();
+
+int glfwGetKey(GLFWwindow* window,
+               int key);
+
+double glfwGetTime();
+
+
+
+// GLEW
+GLenum glewInit();
+
+
 
 // MISC
 const GLubyte* glGetString(GLenum name);
@@ -78,9 +115,23 @@ void glGetProgramInfoLog(GLuint program,
 
 void glUseProgram(GLuint program);
 
+void glGetUniformLocation(GLuint program,
+                          const GLchar* name);
+
+void glUniform4f(GLuint location,
+                 float v0,
+                 float v1,
+                 float v2,
+                 float v3);
+
 
 
 // RENDERING
+void glViewport(GLint x,
+                GLint y,
+                GLsizei width,
+                GLsizei height);
+
 void glClear(GLbitfield mask);
 
 void glClearColor(GLfloat red,

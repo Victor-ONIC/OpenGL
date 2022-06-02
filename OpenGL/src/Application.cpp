@@ -165,10 +165,10 @@ int main()
 
 	// Sommets.
 	float positions[] = {
-		-0.5, -0.5,
-		 0.5, -0.5,
-		 0.5,  0.5,
-		-0.5,  0.5
+		-0.5f, -0.5f,
+		 0.5f, -0.5f,
+		 0.5f,  0.5f,
+		-0.5f,  0.5f
 	};
 
 	// Index des sommets à dessiner.
@@ -198,11 +198,11 @@ int main()
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (const void*)0);
 	glEnableVertexAttribArray(0);
 
+	glBindVertexArray(0);
+
 	// Shaders
 	ShaderProgramSource source = parseShader("./res/shaders/Basic.shader");
 	GLuint shader = createShader(source.vertexSource, source.fragmentSource);
-
-	glBindVertexArray(0);
 
 
 
@@ -210,7 +210,7 @@ int main()
 
 
 	// Loop until the user closes the window
-	glClearColor(0.2, 0.3, 0.3, 1.0);
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	while (!glfwWindowShouldClose(window))
@@ -222,6 +222,12 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shader);
+
+		float time = static_cast<float>(glfwGetTime());
+		float colorValue = std::sin(time) / 2.0f + 0.5f;
+		int uni_color = glGetUniformLocation(shader, "color");
+		glUniform4f(uni_color, 0.0f, colorValue, 0.0f, 1.0f);
+
 		glBindVertexArray(vertexArrayID);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
