@@ -10,7 +10,7 @@
 
 class Shader
 {
-private:
+public:
 	GLuint ID;
 
 public:

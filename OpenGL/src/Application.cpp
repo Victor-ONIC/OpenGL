@@ -1,7 +1,10 @@
-#include <GL/glew.h>  // Fonctions OpenGL
-#include <GLFW/glfw3.h>  // Fenêtres
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 #include <iostream>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "vendor/stb_image.h"
 
 #include "Shader.h"
 
@@ -16,14 +19,8 @@ void process_input(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 }
 
-
-
-
-
-
 int main()
 {
-	// Initialize GLFW.
 	if (!glfwInit())
 	{
 		std::cout << "Erreur dans l'initialisation de GLFW !" << std::endl;
@@ -33,7 +30,6 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Create a windowed mode window and its OpenGL context.
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutoriel OpenGL", NULL, NULL);
 	if (!window)
 	{
@@ -41,11 +37,8 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
-
-	// Make the window's context current.
 	glfwMakeContextCurrent(window);
 
-	// Initialize GLEW. Must be called after a valid window context has been created.
 	if (glewInit() != GLEW_OK)
 	{
 		std::cout << "Erreur dans l'initialisation de GLEW !" << std::endl;
@@ -53,13 +46,10 @@ int main()
 		return -1;
 	}
 
-	// Donner à OpenGL la taille de la fenêtre
 	glViewport(0, 0, 800, 600);
 
-	// Définir la fonction à appeler lorsque la fenêtre change de taille.
 	glfwSetFramebufferSizeCallback(window, window_resize);
 
-	// Afficher la version d'OpenGL sur la console.
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 
@@ -69,14 +59,17 @@ int main()
 
 	// Sommets.
 	float positions[] = {
-		 0.0f,  0.5f, 1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f
+		 // position    // color            // texture coords
+		 0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,  // haut droit
+		 0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,  // bas droit
+		-0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,  // bas gauche
+		-0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f   // haut gauche
 	};
 
 	// Index des sommets à dessiner.
 	unsigned int index[] = {
-		0, 1, 2
+		0, 1, 3,
+		3, 2, 1
 	};
 
 	// VAO
@@ -97,16 +90,41 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
 
 	// Vertex Attribute Layout
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (const void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (const void*)(2 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const void*)(2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	glBindVertexArray(0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const void*)(5 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	// Shaders
 	Shader shader("./res/shaders/vertex_shader.vert", "./res/shaders/fragment_shader.frag");
+
+	// Texture
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+	int width, height, nb_channels;
+	unsigned char* texture_data = stbi_load("./res/textures/container.jpg", &width, &height, &nb_channels, 0);
+	if (texture_data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "\n::-FAILED TO LOAD TEXTURE-::\n";
+	}
+	stbi_image_free(texture_data);
 
 
 
@@ -126,9 +144,10 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shader.bind();
+		glBindTexture(GL_TEXTURE_2D, textureID);
 		glBindVertexArray(vertexArrayID);
 
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		// Swap buffers and check events.
 		glfwSwapBuffers(window);
@@ -138,6 +157,7 @@ int main()
 	glDeleteBuffers(1, &vertexBuffID);        // vbo
 	glDeleteBuffers(1, &indexBuffID);         // ebo
 	glDeleteVertexArrays(1, &vertexArrayID);  // vao
+	glDeleteTextures(1, &textureID);          // texture
 
 	glfwTerminate();
 	return 0;
