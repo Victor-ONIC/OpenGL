@@ -4,11 +4,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image/stb_image.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 #include <iostream>
 #include "Shader.h"
 
 void window_resize(GLFWwindow* window, int width, int height)
 {
+	std::cout << "::-WINDOW RESIZE: " << width << '*' << height << "-::" << std::endl;
 	glViewport(0, 0, width, height);
 }
 
@@ -101,20 +105,21 @@ int main()
 	// Shaders
 	Shader shader("./res/shaders/vertex_shader.vert", "./res/shaders/fragment_shader.frag");
 
-	// Texture
+	// Textures
 	stbi_set_flip_vertically_on_load(true);
 
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	int width, height, nb_channels;
+	unsigned char* texture_data;
 
+	GLuint textureIDs[2];
+	glGenTextures(2, textureIDs);
+
+	glBindTexture(GL_TEXTURE_2D, textureIDs[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	int width, height, nb_channels;
-	unsigned char* texture_data = stbi_load("./res/textures/container.jpg", &width, &height, &nb_channels, 0);
+	texture_data = stbi_load("./res/textures/container.jpg", &width, &height, &nb_channels, 0);
 	if (texture_data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
@@ -122,31 +127,53 @@ int main()
 	}
 	else
 	{
-		std::cout << "\n::-FAILED TO LOAD TEXTURE-::\n";
+		std::cout << "\n::-FAILED TO LOAD TEXTURE \"CONTAINER\"-::\n";
 	}
 	stbi_image_free(texture_data);
 
+	glBindTexture(GL_TEXTURE_2D, textureIDs[1]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	texture_data = stbi_load("./res/textures/awesomeface.png", &width, &height, &nb_channels, 0);
+	if (texture_data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "\n::-FAILED TO LOAD TEXTURE \"AWESOME FACE\"-::\n";
+	}
+	stbi_image_free(texture_data);
+
+	shader.bind();
+	glUniform1i(glGetUniformLocation(shader.ID, "texture1"), 0);
+	glUniform1i(glGetUniformLocation(shader.ID, "texture2"), 1);
+	
 
 
 
 
 
 	// Loop until the user closes the window
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	while (!glfwWindowShouldClose(window))
 	{
 		// Input.
 		process_input(window);
 
 		// Draw.
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		shader.bind();
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glBindVertexArray(vertexArrayID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureIDs[0]);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureIDs[1]);
 
+		shader.bind();
+		glBindVertexArray(vertexArrayID);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		// Swap buffers and check events.
@@ -157,7 +184,7 @@ int main()
 	glDeleteBuffers(1, &vertexBuffID);        // vbo
 	glDeleteBuffers(1, &indexBuffID);         // ebo
 	glDeleteVertexArrays(1, &vertexArrayID);  // vao
-	glDeleteTextures(1, &textureID);          // texture
+	glDeleteTextures(2, textureIDs);          // texture
 
 	glfwTerminate();
 	return 0;
