@@ -115,8 +115,8 @@ void glGetProgramInfoLog(GLuint program,
 
 void glUseProgram(GLuint program);
 
-void glGetUniformLocation(GLuint program,
-                          const GLchar* name);
+GLint glGetUniformLocation(GLuint program,
+                           const GLchar* name);
 
 void glUniform4f(GLuint location,
                  float v0,
@@ -193,3 +193,18 @@ genType mix(genType x,
 gvec4 texture(gsampler2D sample,
               vec2 P,
               [float bias]);
+
+
+
+// GLM
+tmat4x4<T, P> glm::rotate(const tmat4x4<T, P>& m,
+                          T angle,
+                          const tvec3<T, P>& axis);
+
+tmat4x4<T, P> glm::scale(const tmat4x4<T, P>& m,
+                         const tvec3<T, P>& v);
+
+tmat4x4<T, P> glm::translate(const tmat4x4<T, P>& m,
+                             const tvec3<T, P>& v);
+
+const genType::value_type* glm::value_ptr(const genType& vec);

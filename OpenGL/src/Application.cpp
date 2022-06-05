@@ -6,6 +6,7 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include <iostream>
 #include "Shader.h"
@@ -62,11 +63,11 @@ int main()
 
 	// Sommets.
 	float positions[] = {
-		 // position    // color            // texture coords
-		 0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,  // haut droit
-		 0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,  // bas droit
-		-0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,  // bas gauche
-		-0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f   // haut gauche
+		 // position    // texture coords
+		 0.5f,  0.5f,   1.0f, 1.0f,  // haut droit
+		 0.5f, -0.5f,   1.0f, 0.0f,  // bas droit
+		-0.5f, -0.5f,   0.0f, 0.0f,  // bas gauche
+		-0.5f,  0.5f,   0.0f, 1.0f   // haut gauche
 	};
 
 	// Index des sommets à dessiner.
@@ -93,14 +94,11 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
 
 	// Vertex Attribute Layout
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (const void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const void*)(2 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (const void*)(2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const void*)(5 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 
 	// Shaders
 	Shader shader("./res/shaders/vertex_shader.vert", "./res/shaders/fragment_shader.frag");
@@ -151,7 +149,7 @@ int main()
 	shader.bind();
 	glUniform1i(glGetUniformLocation(shader.ID, "texture1"), 0);
 	glUniform1i(glGetUniformLocation(shader.ID, "texture2"), 1);
-	
+
 
 
 
@@ -174,6 +172,13 @@ int main()
 
 		shader.bind();
 		glBindVertexArray(vertexArrayID);
+
+		glm::mat4 transformation = glm::mat4(1.0f);
+		transformation = glm::translate(transformation, glm::vec3(0.5f, -0.5f, 0.0f));
+		transformation = glm::rotate(transformation, static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
+		GLint trans_location = glGetUniformLocation(shader.ID, "transformation");
+		glUniformMatrix4fv(trans_location, 1, GL_FALSE, glm::value_ptr(transformation));
+
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		// Swap buffers and check events.
