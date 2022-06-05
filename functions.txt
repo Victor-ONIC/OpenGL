@@ -124,6 +124,9 @@ void glUniform4f(GLuint location,
                  float v2,
                  float v3);
 
+void glUniform1i(GLuint location,
+                GLint v0);
+
 
 
 // TEXTURES
@@ -150,6 +153,8 @@ void glTexImage2D(GLenum target,
                   const GLvoid* data);
 
 void glGenerateMipmap(GLenum target);
+
+void glActiveTexture(GLenum texture);
 
 
 
@@ -181,5 +186,10 @@ void glPolygonMode(GLenum face,
 
 
 // GLSL
-mix
-texture
+genType mix(genType x,
+            genType y,
+            genType a);
+
+gvec4 texture(gsampler2D sample,
+              vec2 P,
+              [float bias]);
