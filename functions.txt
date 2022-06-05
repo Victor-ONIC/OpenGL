@@ -177,3 +177,9 @@ void glDrawElements(GLenum mode,
 
 void glPolygonMode(GLenum face,
                    GLenum mode);
+
+
+
+// GLSL
+mix
+texture

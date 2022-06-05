@@ -3,15 +3,17 @@
 Shader::Shader(const std::string& VSpath, const std::string& FSpath)
 {
 	// Get shaders code
-	std::string VSstring, FSstring;
-	std::ifstream VSfile(VSpath), FSfile(FSpath);
+	std::ifstream VSfile(VSpath);
+	if (!VSfile) std::cout << "\n::-ERREUR OUVERTURE FICHIER VERTEX SHADER-::\n";
+	std::ifstream FSfile(FSpath);
+	if (!FSfile) std::cout << "\n::-ERREUR OUVERTURE FICHIER FRAGMENT SHADER-::\n";
 
 	std::stringstream VSstream, FSstream;
 	VSstream << VSfile.rdbuf();
 	FSstream << FSfile.rdbuf();
 
-	VSstring = VSstream.str();
-	FSstring = FSstream.str();
+	std::string VSstring = VSstream.str();
+	std::string FSstring = FSstream.str();
 
 	const char* VScode = VSstring.c_str();
 	const char* FScode = FSstring.c_str();

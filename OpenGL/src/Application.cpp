@@ -1,11 +1,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <iostream>
-
 #define STB_IMAGE_IMPLEMENTATION
-#include "vendor/stb_image.h"
+#include "stb_image/stb_image.h"
 
+#include <iostream>
 #include "Shader.h"
 
 void window_resize(GLFWwindow* window, int width, int height)
@@ -103,6 +102,8 @@ int main()
 	Shader shader("./res/shaders/vertex_shader.vert", "./res/shaders/fragment_shader.frag");
 
 	// Texture
+	stbi_set_flip_vertically_on_load(true);
+
 	GLuint textureID;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
@@ -112,7 +113,6 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	stbi_set_flip_vertically_on_load(true);
 	int width, height, nb_channels;
 	unsigned char* texture_data = stbi_load("./res/textures/container.jpg", &width, &height, &nb_channels, 0);
 	if (texture_data)
