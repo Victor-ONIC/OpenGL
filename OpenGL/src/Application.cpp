@@ -150,6 +150,20 @@ int main()
 	shader.uniform_1i("texture1", 0);
 	shader.uniform_1i("texture2", 1);
 
+	// Transformations
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+	glm::mat4 projection = glm::mat4(1.0f);
+	projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+	shader.uniform_mat4("model", model);
+	shader.uniform_mat4("view", view);
+	shader.uniform_mat4("projection", projection);
+
 
 
 
@@ -172,12 +186,6 @@ int main()
 
 		shader.bind();
 		glBindVertexArray(VAO_id);
-
-		glm::mat4 transformation = glm::mat4(1.0f);
-		transformation = glm::translate(transformation, glm::vec3(0.5f, -0.5f, 0.0f));
-		transformation = glm::rotate(transformation, static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
-		shader.uniform_mat4("transformation", transformation);
-
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		// Swap buffers and check events.
@@ -186,9 +194,9 @@ int main()
 	}
 
 	glDeleteBuffers(1, &VBO_id);        // vbo
-	glDeleteBuffers(1, &EBO_id);         // ebo
-	glDeleteVertexArrays(1, &VAO_id);  // vao
-	glDeleteTextures(2, texture_ids);          // textures
+	glDeleteBuffers(1, &EBO_id);        // ebo
+	glDeleteVertexArrays(1, &VAO_id);   // vao
+	glDeleteTextures(2, texture_ids);   // textures
 
 	glfwTerminate();
 	return 0;
