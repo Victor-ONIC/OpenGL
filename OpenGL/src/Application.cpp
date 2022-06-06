@@ -13,7 +13,7 @@
 
 void window_resize(GLFWwindow* window, int width, int height)
 {
-	std::cout << "::-WINDOW RESIZE: " << width << '*' << height << "-::" << std::endl;
+	std::cout << "::- WINDOW RESIZE: " << width << " * " << height << " -::" << std::endl;
 	glViewport(0, 0, width, height);
 }
 
@@ -27,7 +27,7 @@ int main()
 {
 	if (!glfwInit())
 	{
-		std::cout << "Erreur dans l'initialisation de GLFW !" << std::endl;
+		std::cout << "::- ERROR: CANNOT INITIALIZE GLFW -::" << std::endl;
 		return -1;
 	}
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -37,7 +37,7 @@ int main()
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutoriel OpenGL", NULL, NULL);
 	if (!window)
 	{
-		std::cout << "Erreur dans la création de la fenêtre !" << std::endl;
+		std::cout << "::- ERROR: CANNOT CREATE WINDOW -::" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -45,7 +45,7 @@ int main()
 
 	if (glewInit() != GLEW_OK)
 	{
-		std::cout << "Erreur dans l'initialisation de GLEW !" << std::endl;
+		std::cout << "::- ERROR: CANNOT INITIALIZE GLEW -::" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
@@ -77,20 +77,20 @@ int main()
 	};
 
 	// VAO
-	GLuint vertexArrayID;
-	glGenVertexArrays(1, &vertexArrayID);
-	glBindVertexArray(vertexArrayID);
+	GLuint VAO_id;
+	glGenVertexArrays(1, &VAO_id);
+	glBindVertexArray(VAO_id);
 
 	// VBO
-	GLuint vertexBuffID;
-	glGenBuffers(1, &vertexBuffID);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffID);
+	GLuint VBO_id;
+	glGenBuffers(1, &VBO_id);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_id);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
 
 	// EBO
-	GLuint indexBuffID;
-	glGenBuffers(1, &indexBuffID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffID);
+	GLuint EBO_id;
+	glGenBuffers(1, &EBO_id);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_id);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index), index, GL_STATIC_DRAW);
 
 	// Vertex Attribute Layout
@@ -109,10 +109,10 @@ int main()
 	int width, height, nb_channels;
 	unsigned char* texture_data;
 
-	GLuint textureIDs[2];
-	glGenTextures(2, textureIDs);
+	GLuint texture_ids[2];
+	glGenTextures(2, texture_ids);
 
-	glBindTexture(GL_TEXTURE_2D, textureIDs[0]);
+	glBindTexture(GL_TEXTURE_2D, texture_ids[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -125,11 +125,11 @@ int main()
 	}
 	else
 	{
-		std::cout << "\n::-FAILED TO LOAD TEXTURE \"CONTAINER\"-::\n";
+		std::cout << "\n::- FAILED TO LOAD TEXTURE \"container.jpg\" -::\n";
 	}
 	stbi_image_free(texture_data);
 
-	glBindTexture(GL_TEXTURE_2D, textureIDs[1]);
+	glBindTexture(GL_TEXTURE_2D, texture_ids[1]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -142,13 +142,13 @@ int main()
 	}
 	else
 	{
-		std::cout << "\n::-FAILED TO LOAD TEXTURE \"AWESOME FACE\"-::\n";
+		std::cout << "\n::- FAILED TO LOAD TEXTURE \"awesomeface.png\" -::\n";
 	}
 	stbi_image_free(texture_data);
 
 	shader.bind();
-	glUniform1i(glGetUniformLocation(shader.ID, "texture1"), 0);
-	glUniform1i(glGetUniformLocation(shader.ID, "texture2"), 1);
+	shader.uniform_1i("texture1", 0);
+	shader.uniform_1i("texture2", 1);
 
 
 
@@ -166,18 +166,17 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureIDs[0]);
+		glBindTexture(GL_TEXTURE_2D, texture_ids[0]);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, textureIDs[1]);
+		glBindTexture(GL_TEXTURE_2D, texture_ids[1]);
 
 		shader.bind();
-		glBindVertexArray(vertexArrayID);
+		glBindVertexArray(VAO_id);
 
 		glm::mat4 transformation = glm::mat4(1.0f);
 		transformation = glm::translate(transformation, glm::vec3(0.5f, -0.5f, 0.0f));
 		transformation = glm::rotate(transformation, static_cast<float>(glfwGetTime()), glm::vec3(0.0f, 0.0f, 1.0f));
-		GLint trans_location = glGetUniformLocation(shader.ID, "transformation");
-		glUniformMatrix4fv(trans_location, 1, GL_FALSE, glm::value_ptr(transformation));
+		shader.uniform_mat4("transformation", transformation);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
@@ -186,10 +185,10 @@ int main()
 		glfwPollEvents();
 	}
 
-	glDeleteBuffers(1, &vertexBuffID);        // vbo
-	glDeleteBuffers(1, &indexBuffID);         // ebo
-	glDeleteVertexArrays(1, &vertexArrayID);  // vao
-	glDeleteTextures(2, textureIDs);          // texture
+	glDeleteBuffers(1, &VBO_id);        // vbo
+	glDeleteBuffers(1, &EBO_id);         // ebo
+	glDeleteVertexArrays(1, &VAO_id);  // vao
+	glDeleteTextures(2, texture_ids);          // textures
 
 	glfwTerminate();
 	return 0;

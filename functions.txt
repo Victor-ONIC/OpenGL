@@ -197,6 +197,8 @@ gvec4 texture(gsampler2D sample,
 
 
 // GLM
+const genType::value_type* glm::value_ptr(const genType& vec);
+
 tmat4x4<T, P> glm::rotate(const tmat4x4<T, P>& m,
                           T angle,
                           const tvec3<T, P>& axis);
@@ -206,5 +208,3 @@ tmat4x4<T, P> glm::scale(const tmat4x4<T, P>& m,
 
 tmat4x4<T, P> glm::translate(const tmat4x4<T, P>& m,
                              const tvec3<T, P>& v);
-
-const genType::value_type* glm::value_ptr(const genType& vec);
