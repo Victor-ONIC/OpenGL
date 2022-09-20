@@ -1,9 +1,13 @@
+// GLEW - Bibliothèque donnant accès aux fonctions d'OpenGL.
 #include <GL/glew.h>
+// GLFW - Bibliothèque pour créer et gérer des fenêtres.
 #include <GLFW/glfw3.h>
 
+// stb_image - Bibliothèque pour gérer les images (png, jpg, etc...).
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image/stb_image.h"
 
+// GLM - Bibliothèque de mathématiques.
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -11,20 +15,12 @@
 #include <iostream>
 #include "Shader.h"
 
-void window_resize(GLFWwindow* window, int width, int height)
-{
-	std::cout << "::- WINDOW RESIZE: " << width << " * " << height << " -::" << std::endl;
-	glViewport(0, 0, width, height);
-}
-
-void process_input(GLFWwindow* window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-}
+void window_resize(GLFWwindow* window, int width, int height);
+void process_input(GLFWwindow* window);
 
 int main()
 {
+	// Appel de glfwInit().
 	if (!glfwInit())
 	{
 		std::cout << "::- ERROR: CANNOT INITIALIZE GLFW -::" << std::endl;
@@ -34,6 +30,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	// Mise en place de la fenêtre.
 	GLFWwindow* window = glfwCreateWindow(800, 600, "Tutoriel OpenGL", NULL, NULL);
 	if (!window)
 	{
@@ -43,6 +40,7 @@ int main()
 	}
 	glfwMakeContextCurrent(window);
 
+	// Appel de glewInit(). TOUJOURS APRES glfwInit() !!!
 	if (glewInit() != GLEW_OK)
 	{
 		std::cout << "::- ERROR: CANNOT INITIALIZE GLEW -::" << std::endl;
@@ -50,10 +48,13 @@ int main()
 		return -1;
 	}
 
+	// Définition de la taille de la fenêtre pour OpenGL.
 	glViewport(0, 0, 800, 600);
 
+	// Définition de la fonction callback a appeler lors de l'évènement de changement de taille de fenêtre.
 	glfwSetFramebufferSizeCallback(window, window_resize);
 
+	// Affichage de la version d'OpenGL.
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 
@@ -70,24 +71,27 @@ int main()
 		-0.5f,  0.5f,   0.0f, 1.0f   // haut gauche
 	};
 
-	// Index des sommets à dessiner.
+	// Index des sommets à dessiner. Deux triangles -> un carré.
 	unsigned int index[] = {
 		0, 1, 3,
 		3, 2, 1
 	};
 
 	// VAO
+	// Vertex Array Object
 	GLuint VAO_id;
 	glGenVertexArrays(1, &VAO_id);
 	glBindVertexArray(VAO_id);
 
 	// VBO
+	// Vertex Buffer Object
 	GLuint VBO_id;
 	glGenBuffers(1, &VBO_id);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_id);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
 
 	// EBO
+	// Element buffer Object
 	GLuint EBO_id;
 	glGenBuffers(1, &EBO_id);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_id);
@@ -200,4 +204,16 @@ int main()
 
 	glfwTerminate();
 	return 0;
+}
+
+void window_resize(GLFWwindow* window, int width, int height)
+{
+	std::cout << "::- WINDOW RESIZE: " << width << " * " << height << " -::" << std::endl;
+	glViewport(0, 0, width, height);
+}
+
+void process_input(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }

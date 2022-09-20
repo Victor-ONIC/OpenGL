@@ -61,7 +61,7 @@ Shader::Shader(const std::string& VSpath, const std::string& FSpath)
 		delete[] message;
 	}
 
-	// Link program
+	// Link shader program
 	this->ID = glCreateProgram();
 
 	glAttachShader(this->ID, VS);
